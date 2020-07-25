@@ -4,11 +4,15 @@ import cors from 'cors'
 import bodyParser from 'body-parser'
 import sockjs from 'sockjs'
 import { renderToStaticNodeStream } from 'react-dom/server'
+
 import React from 'react'
+import axios from 'axios'
 
 import cookieParser from 'cookie-parser'
 import config from './config'
 import Html from '../client/html'
+
+const { readFile, stat, writeFile } = require('fs').promises
 
 const Root = () => ''
 
@@ -17,19 +21,43 @@ try {
   // ;(async () => {
   //   const items = await import('../dist/assets/js/root.bundle')
   //   console.log(JSON.stringify(items))
-
   //   Root = (props) => <items.Root {...props} />
   //   console.log(JSON.stringify(items.Root))
   // })()
-  console.log(Root)
+  // console.log(Root)
 } catch (ex) {
-  console.log(' run yarn build:prod to enable ssr')
+  // console.log(' run yarn build:prod to enable ssr')
 }
 
 let connections = []
 
 const port = process.env.PORT || 8090
 const server = express()
+
+const URL = 'https://jsonplaceholder.typicode.com/users'
+
+const getRemoteUsers = async (url) => {
+  const { data: users } = await axios(url)
+  return JSON.stringify(users)
+}
+
+const readLocalUsers = async (fileName) => {
+  const fileExists = await stat(`${__dirname}/${fileName}`)
+    .then((data) => data)
+    .catch((err) => `${err.code}`)
+  if (fileExists !== 'ENOENT') {
+    const result = await readFile(`${__dirname}/${fileName}`, { encoding: 'utf8' })
+      .then((users) => users)
+      .catch((err) => `${err.code} ${err.message}`)
+
+    return result
+  }
+  const response = await getRemoteUsers(URL)
+
+  writeFile(`${__dirname}/${fileName}`, response, { encoding: 'utf8' })
+
+  return response
+}
 
 const middleware = [
   cors(),
@@ -40,6 +68,17 @@ const middleware = [
 ]
 
 middleware.forEach((it) => server.use(it))
+
+server.use((req, res, next) => {
+  res.set('x-skillcrucial-user', '3f05ffed-e648-4545-bb6c-a70118fca01a')
+  res.set('Access-Control-Expose-Headers', 'X-SKILLCRUCIAL-USER')
+  next()
+})
+
+server.get('/api/v1/users', async (req, res) => {
+  const readUsers = await readLocalUsers('../users.json')
+  res.json(JSON.parse(readUsers))
+})
 
 server.use('/api/', (req, res) => {
   res.status(404)
@@ -88,4 +127,4 @@ if (config.isSocketsEnabled) {
   })
   echo.installHandlers(app, { prefix: '/ws' })
 }
-console.log(`Serving at http://localhost:${port}`)
+// console.log(`Serving at http://localhost:${port}`)
