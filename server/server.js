@@ -12,7 +12,7 @@ import cookieParser from 'cookie-parser'
 import config from './config'
 import Html from '../client/html'
 
-const { readFile, stat, writeFile } = require('fs').promises
+const { readFile, stat, writeFile, unlink } = require('fs').promises
 
 const Root = () => ''
 
@@ -78,6 +78,26 @@ server.use((req, res, next) => {
 server.get('/api/v1/users', async (req, res) => {
   const readUsers = await readLocalUsers('../users.json')
   res.json(JSON.parse(readUsers))
+})
+
+server.post('/api/v1/users', async (req, res) => {
+  const result = await readFile(`${__dirname}/../users.json`, { encoding: 'utf8' })
+    .then((users) => users)
+    .catch((err) => `${err.code} ${err.message}`)
+
+  unlink(`${__dirname}/../users.json`, (err) => {
+    if (err) throw err
+  })
+  const data = JSON.parse(result)
+  data.sort((a, b) => a.id - b.id)
+  const newId = data[data.length - 1].id + 1
+
+  const newUser = {}
+  newUser.id = newId
+
+  const newResponse = JSON.stringify([...data, newUser])
+  writeFile(`${__dirname}/../users.json`, newResponse, { encoding: 'utf8' })
+  res.json({ status: 'success', id: newId })
 })
 
 server.use('/api/', (req, res) => {
