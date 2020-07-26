@@ -199,4 +199,4 @@ if (config.isSocketsEnabled) {
   })
   echo.installHandlers(app, { prefix: '/ws' })
 }
-// console.log(`Serving at http://localhost:${port}`)
+console.log(`Serving at http://localhost:${port}`)
