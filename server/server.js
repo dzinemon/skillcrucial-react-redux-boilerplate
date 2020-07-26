@@ -145,6 +145,13 @@ server.delete('/api/v1/users/:userId', async (req, res) => {
   res.json({ status: 'success', id: userId })
 })
 
+server.delete('/api/v1/users/', async (req, res) => {
+  unlink(`${__dirname}/../users.json`, (err) => {
+    if (err) throw err
+  })
+  res.end()
+})
+
 server.use('/api/', (req, res) => {
   res.status(404)
   res.end()
