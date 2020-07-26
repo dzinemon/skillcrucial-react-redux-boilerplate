@@ -109,10 +109,11 @@ server.patch('/api/v1/users/:userId', async (req, res) => {
   unlink(`${__dirname}/../users.json`, (err) => {
     if (err) throw err
   })
+  const userData = req.body
   const data = JSON.parse(result)
   const newData = data.reduce((acc, cur) => {
     if (cur.id === userId) {
-      const newCur = { ...cur, name: `Jane Doe ${userId}` }
+      const newCur = { ...cur, userData }
       return [...acc, newCur]
     }
     return [...acc, cur]
