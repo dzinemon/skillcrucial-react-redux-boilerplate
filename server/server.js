@@ -113,7 +113,7 @@ server.patch('/api/v1/users/:userId', async (req, res) => {
   const data = JSON.parse(result)
   const newData = data.reduce((acc, cur) => {
     if (cur.id === userId) {
-      const newCur = { ...cur, userData }
+      const newCur = Object.assign(cur, userData)
       return [...acc, newCur]
     }
     return [...acc, cur]
