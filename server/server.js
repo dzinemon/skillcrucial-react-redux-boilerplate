@@ -123,6 +123,28 @@ server.patch('/api/v1/users/:userId', async (req, res) => {
   res.json({ status: 'success', id: userId })
 })
 
+server.delete('/api/v1/users/:userId', async (req, res) => {
+  const userId = Number(req.params.userId)
+
+  const result = await readFile(`${__dirname}/../users.json`, { encoding: 'utf8' })
+    .then((users) => users)
+    .catch((err) => `${err.code} ${err.message}`)
+
+  unlink(`${__dirname}/../users.json`, (err) => {
+    if (err) throw err
+  })
+  const data = JSON.parse(result)
+  const newData = data.reduce((acc, cur) => {
+    if (cur.id === userId) {
+      return [...acc]
+    }
+    return [...acc, cur]
+  }, [])
+  const newResponse = JSON.stringify(newData)
+  writeFile(`${__dirname}/../users.json`, newResponse, { encoding: 'utf8' })
+  res.json({ status: 'success', id: userId })
+})
+
 server.use('/api/', (req, res) => {
   res.status(404)
   res.end()
