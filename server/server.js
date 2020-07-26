@@ -88,9 +88,11 @@ server.post('/api/v1/users', async (req, res) => {
   unlink(`${__dirname}/../users.json`, (err) => {
     if (err) throw err
   })
+  const userData = req.body
   const data = JSON.parse(result)
   const getLastElId = data[data.length - 1].id
-  const newData = [...data, { id: getLastElId + 1 }]
+  userData.id = getLastElId + 1
+  const newData = [...data, userData]
 
   const newResponse = JSON.stringify(newData)
   writeFile(`${__dirname}/../users.json`, newResponse, { encoding: 'utf8' })
