@@ -89,15 +89,12 @@ server.post('/api/v1/users', async (req, res) => {
     if (err) throw err
   })
   const data = JSON.parse(result)
-  data.sort((a, b) => a.id - b.id)
-  const newId = data[data.length - 1].id + 1
+  const getLastElId = data[data.length - 1].id
+  const newData = [...data, { id: getLastElId + 1 }]
 
-  const newUser = {}
-  newUser.id = newId
-
-  const newResponse = JSON.stringify([...data, newUser])
+  const newResponse = JSON.stringify(newData)
   writeFile(`${__dirname}/../users.json`, newResponse, { encoding: 'utf8' })
-  res.json({ status: 'success', id: newId })
+  res.json({ status: 'success', id: getLastElId + 1 })
 })
 
 server.patch('/api/v1/users/:userId', async (req, res) => {
