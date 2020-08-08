@@ -41,6 +41,7 @@ const InputView = () => {
 
       {searchable && (
         <button
+          id="search-button"
           className="border-gray-600 hover:border-green-700 bg-green-200 hover:bg-gray-900 hover:text-white text-gray-700 rounded-r-md border-2 py-1 px-4"
           type="button"
           onClick={() => {
